@@ -6,22 +6,33 @@ const functions = require('./functions');
 const { pool } = require('parallelizer-function');
 app.use(express.static('static'));
 
-pool.setMaxWorkers(1);
+pool.setMaxWorkers(4);
+
+function mainHeavyTask(usingWorker = true) {
+  console.log('usingWorker: ', usingWorker);
+  if (usingWorker) {
+    return Promise.all([
+      pool.exec(functions.sumUpTo, [1_000_000_000]),
+      pool.exec(functions.isPrimeThisNumber, [98764321261]),
+      pool.exec(functions.sumUpTo, [2_999_000_000]),
+      pool.exec(functions.tripleSum, [[11, 2, 3, 4, 5, 6, 7, 8, 9, 15], 32]),
+    ]);
+  } else {
+    return Promise.all([
+      Promise.resolve(functions.sumUpTo(1_000_000_000)),
+      Promise.resolve(functions.isPrimeThisNumber(98764321261)),
+      Promise.resolve(functions.sumUpTo(2_99_000_000)),
+      Promise.resolve(
+        functions.tripleSum([11, 2, 3, 4, 5, 6, 7, 8, 9, 15], 32)
+      ),
+    ]);
+  }
+}
 
 app.get('/', async (req, res) => {
   let start = performance.now();
-  // Promise.all([
-  //   pool.exec(functions.isPrimeThisNumber, [98764321261]),
-  //   pool.exec(functions.isPrimeThisNumber, [98764821261]),
-  //   pool.exec(functions.tripleSum, [[12, 3, 1, 2, -6, 5, 0, -8, -1, 6], 0]),
-  //   pool.exec(functions.tripleSum, [[11, 2, 3, 4, 5, 6, 7, 8, 9, 15], 32]),
-  // ])
-  Promise.all([
-    Promise.resolve(functions.sumUpTo(1_000_000_000)),
-    Promise.resolve(functions.isPrimeThisNumber(98764321261)),
-    Promise.resolve(functions.sumUpTo(2_99_000_000)),
-    Promise.resolve(functions.tripleSum([11, 2, 3, 4, 5, 6, 7, 8, 9, 15], 32)),
-  ])
+  let usingPool = !!req.query.usingPool;
+  mainHeavyTask(usingPool)
     .then(([sumUpTo1, isPrime2, sumUpTo2, tripleSum2]) => {
       let delayMs = performance.now() - start;
       return res.send(`
@@ -48,12 +59,10 @@ app.get('/', async (req, res) => {
       <h2>We are using pool from the library parallelizer-function </h2>
       <h3>Insights</h3>
       <ul>
-        <li><strong># of threads</strong> ${pool.maxWorker}</li>
+        <li><strong># of threads:</strong> ${pool.maxWorker}</li>
+        <li><strong>delay in ms:</strong> ${delayMs.toFixed(2)}</li>
+        <li><strong>is usingPool:</strong> ${usingPool}</li>
       </ul>
-      <ul>
-        <li><strong>delay in ms</strong> ${delayMs.toFixed(2)}</li>
-      </ul>
-      
 
       <table class="table">
         <tr>
