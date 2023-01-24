@@ -19,7 +19,7 @@ app.get('/', async (req, res) => {
   Promise.all([
     Promise.resolve(functions.sumUpTo(1_000_000_000)),
     Promise.resolve(functions.isPrimeThisNumber(98764321261)),
-    Promise.resolve(functions.sumUpTo(9_999_000_000)),
+    Promise.resolve(functions.sumUpTo(2_99_000_000)),
     Promise.resolve(functions.tripleSum([11, 2, 3, 4, 5, 6, 7, 8, 9, 15], 32)),
   ])
     .then(([sumUpTo1, isPrime2, sumUpTo2, tripleSum2]) => {
