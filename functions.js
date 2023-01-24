@@ -6,14 +6,14 @@ function isPrimeThisNumber(n) {
   return true;
 }
 
-function tripleSum(arr = []) {
+function tripleSum(arr = [], targetSum = 0) {
   // This function return all the distinc triplet i,j,k i<j<k,
-  // where arr[i] + arr[j] + arr[k] sum up to 0. Complexity O(n^2)
+  // where arr[i] + arr[j] + arr[k] sum up to target. Complexity O(n^2)
   let visited = new Set();
   let sol = [];
   arr = arr.sort();
   for (let i = 0; i < arr.length; i++) {
-    let target = -arr[i];
+    let target = targetSum - arr[i];
     let isSeen = new Set();
     for (let j = i + 1; j < arr.length; j++) {
       if (isSeen.has(target - arr[j])) {
@@ -60,9 +60,18 @@ async function getProductFromExternalApi() {
   return allData;
 }
 
+function sumUpTo(n) {
+  let sum = 0;
+  for (let i = 0; i <= n; i++) {
+    sum += i;
+  }
+  return sum;
+}
+
 module.exports = {
   tripleSum,
   simulateLongTask,
   isPrimeThisNumber,
   getProductFromExternalApi,
+  sumUpTo,
 };
