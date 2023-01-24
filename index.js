@@ -8,20 +8,20 @@ app.use(express.static('static'));
 
 pool.setMaxWorkers(4);
 
-function mainHeavyTask(usingWorker = true) {
-  console.log('usingWorker: ', usingWorker);
-  if (usingWorker) {
+function mainHeavyTask(usingPool) {
+  console.log('usingPool: ', usingPool);
+  if (usingPool) {
     return Promise.all([
       pool.exec(functions.sumUpTo, [1_000_000_000]),
       pool.exec(functions.isPrimeThisNumber, [98764321261]),
-      pool.exec(functions.sumUpTo, [2_999_000_000]),
+      pool.exec(functions.sumUpTo, [2_000_000_000]),
       pool.exec(functions.tripleSum, [[11, 2, 3, 4, 5, 6, 7, 8, 9, 15], 32]),
     ]);
   } else {
     return Promise.all([
       Promise.resolve(functions.sumUpTo(1_000_000_000)),
       Promise.resolve(functions.isPrimeThisNumber(98764321261)),
-      Promise.resolve(functions.sumUpTo(2_99_000_000)),
+      Promise.resolve(functions.sumUpTo(2_000_000_000)),
       Promise.resolve(
         functions.tripleSum([11, 2, 3, 4, 5, 6, 7, 8, 9, 15], 32)
       ),
@@ -31,7 +31,7 @@ function mainHeavyTask(usingWorker = true) {
 
 app.get('/', async (req, res) => {
   let start = performance.now();
-  let usingPool = !!req.query.usingPool;
+  let usingPool = req.query.usingPool == 'true';
   mainHeavyTask(usingPool)
     .then(([sumUpTo1, isPrime2, sumUpTo2, tripleSum2]) => {
       let delayMs = performance.now() - start;
@@ -79,7 +79,7 @@ app.get('/', async (req, res) => {
           <td>${isPrime2}</td>
         </tr>
         <tr>
-        <td>sum up to: ${2_99_000_000}</td>
+        <td>sum up to: ${2_000_000_000}</td>
         <td>${sumUpTo2}</td>
       </tr>
         <tr>
